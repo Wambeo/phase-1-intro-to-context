@@ -1,73 +1,85 @@
-// Your code here
-// Function to create an employee record
-function createEmployeeRecord(employeeData) {
+function parseTimestamp(timestamp) {
+    const [date, time] = timestamp.split(' '); // Split the timestamp into date and time parts
+    const [year, month, day] = date.split('-').map(Number); // Parse the date parts as numbers
+    const hour = Number(time) / 100; // Convert the time part to hours
+    return { year, month, day, hour };
+  }
+  
+  function createEmployeeRecord(array) {
     return {
-      firstName: employeeData[0],
-      familyName: employeeData[1],
-      title: employeeData[2],
-      payPerHour: employeeData[3],
-      timeInEvents: [],
-      timeOutEvents: []
+        firstName: array[0],
+        familyName: array[1],
+        title: array[2],
+        payPerHour: array[3],
+        timeInEvents: [],
+        timeOutEvents: []
     };
   }
   
-  // Function to create employee records from an array of arrays
-  function createEmployeeRecords(employeeDataArray) {
-    return employeeDataArray.map(createEmployeeRecord);
+  function createEmployeeRecords(arrayOfArrays) {
+    return arrayOfArrays.map(createEmployeeRecord);
   }
   
-  // Function to add a timeIn event to an employee's record
-  function createTimeInEvent(dateTimeString) {
-    const [date, hour] = dateTimeString.split(" ");
-    this.timeInEvents.push({ type: "TimeIn", date, hour: parseInt(hour, 10) });
-    return this;
+  // Define the createTimeInEvent function
+  function createTimeInEvent(employeeRecord, dateTimeString) {
+    const [date, hour] = dateTimeString.split(' ');
+    const timeInEvent = {
+        type: "TimeIn",
+        hour: parseInt(hour, 10),
+        date: date
+    };
+    employeeRecord.timeInEvents.push(timeInEvent);
+    return employeeRecord;
   }
   
-  // Function to add a timeOut event to an employee's record
-  function createTimeOutEvent(dateTimeString) {
-    const [date, hour] = dateTimeString.split(" ");
-    this.timeOutEvents.push({ type: "TimeOut", date, hour: parseInt(hour, 10) });
-    return this;
+  // Define the createTimeOutEvent function
+  function createTimeOutEvent(employeeRecord, dateTimeString) {
+    const [date, hour] = dateTimeString.split(' ');
+    const timeOutEvent = {
+        type: "TimeOut",
+        hour: parseInt(hour, 10),
+        date: date
+    };
+    employeeRecord.timeOutEvents.push(timeOutEvent);
+    return employeeRecord;
   }
   
-  // Function to calculate the hours worked on a specific date
-  function hoursWorkedOnDate(date) {
-    const timeInEvent = this.timeInEvents.find(event => event.date === date);
-    const timeOutEvent = this.timeOutEvents.find(event => event.date === date);
+  // Export the functions for use in other modules
+  module.exports = {
+    createTimeInEvent,
+    createTimeOutEvent
+  };
+  
+  // Define the hoursWorkedOnDate function
+  function hoursWorkedOnDate(employeeRecord, date) {
+    const timeInEvent = employeeRecord.timeInEvents.find(event => event.date === date);
+    const timeOutEvent = employeeRecord.timeOutEvents.find(event => event.date === date);
     const hoursWorked = (timeOutEvent.hour - timeInEvent.hour) / 100;
     return hoursWorked;
   }
   
-  // Function to calculate wages earned on a specific date
-  function wagesEarnedOnDate(date) {
-    const hoursWorked = hoursWorkedOnDate.call(this, date);
-    return hoursWorked * this.payPerHour;
+  // Define the wagesEarnedOnDate function
+  function wagesEarnedOnDate(employeeRecord, date) {
+    const hoursWorked = hoursWorkedOnDate(employeeRecord, date);
+    const wagesEarned = hoursWorked * employeeRecord.payPerHour;
+    return wagesEarned;
   }
   
-  // Function to calculate all wages for an employee
-  function allWagesFor() {
-    const dates = this.timeInEvents.map(event => event.date);
-    const wages = dates.map(date => wagesEarnedOnDate.call(this, date));
-    return wages.reduce((total, wage) => total + wage, 0);
+  // Define the allWagesFor function
+  function allWagesFor(employeeRecord) {
+    const datesWorked = employeeRecord.timeInEvents.map(event => event.date);
+    const totalWages = datesWorked.reduce((acc, date) => acc + wagesEarnedOnDate(employeeRecord, date), 0);
+    return totalWages;
   }
   
-  // Function to calculate payroll for all employees
+  // Define the calculatePayroll function
   function calculatePayroll(employeeRecords) {
-    return employeeRecords.reduce((totalPayroll, employee) => {
-      return totalPayroll + allWagesFor.call(employee);
-    }, 0);
+    const totalPayroll = employeeRecords.reduce((acc, employeeRecord) => acc + allWagesFor(employeeRecord), 0);
+    return totalPayroll;
   }
   
-  // Function to find an employee record by first name in a collection
-function findEmployeeByFirstName(collection, firstNameString) {
-    return collection.find(employee => employee.firstName === firstNameString);
-  }
-  // Exporting functions
+  // Export the functions for use in other modules
   module.exports = {
-    createEmployeeRecord,
-    createEmployeeRecords,
-    createTimeInEvent,
-    createTimeOutEvent,
     hoursWorkedOnDate,
     wagesEarnedOnDate,
     allWagesFor,
